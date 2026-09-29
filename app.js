@@ -294,7 +294,7 @@ function renderOverview() {
       <div class="surface progress">
         <span class="kicker">Andamento do ciclo</span>
         <div class="progress-main"><strong>${doneAll} de ${totalAll}</strong><span>entregas concluídas<br>${pct}% do planejado</span></div>
-        <div class="track"><span style="width:${pctExact}%"></span></div>
+        <div class="track"><span style="width:${pctExact}%;background:${progressColor(pctExact)}"></span></div>
         <div class="progress-foot"><span>${doneAll} concluídas</span><span>${totalAll - doneAll} pendentes</span></div>
       </div>
       <div class="surface priority">
@@ -318,7 +318,15 @@ function renderOverview() {
 
 function chartLine(label, done, total) {
   const pct = total ? (done / total) * 100 : 0;
-  return `<div class="chart-line"><b>${label}</b><div class="bar"><span style="width:${pct}%"></span></div><span class="value">${Math.round(pct)}%</span></div>`;
+  return `<div class="chart-line"><b>${label}</b><div class="bar"><span style="width:${pct}%;background:${progressColor(pct)}"></span></div><span class="value">${Math.round(pct)}%</span></div>`;
+}
+
+// Retorna uma cor num degrade de vermelho (0%) até verde (100%), passando por
+// amarelo/laranja no meio, para indicar visualmente o nível de andamento.
+function progressColor(pct) {
+  const p = Math.max(0, Math.min(100, pct));
+  const hue = (p / 100) * 120; // 0 = vermelho, 60 = amarelo, 120 = verde
+  return `hsl(${hue}, 72%, 45%)`;
 }
 
 // ------------------------------------------------------------
