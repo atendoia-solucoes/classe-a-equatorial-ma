@@ -32,7 +32,7 @@ header{background:#102f71;color:#fff}
 .progress-main strong{font-size:clamp(36px,6vw,58px);letter-spacing:-.06em;line-height:1}
 .progress-main span{color:#526683;text-align:right}
 .track{background:#e8eef8;height:12px;border-radius:99px;overflow:hidden}
-.track span{display:block;height:100%;background:#2862c4;border-radius:99px;transition:width .3s}
+.track span{display:block;height:100%;background:#2862c4;border-radius:99px;transition:width .3s,background-color .3s}
 .progress-foot{display:flex;justify-content:space-between;margin-top:13px;color:#627595;font-size:13px}
 .priority{padding:25px}
 .priority h3{font-size:18px;margin:0 0 15px}
@@ -48,7 +48,7 @@ header{background:#102f71;color:#fff}
 .chart-line{display:grid;grid-template-columns:110px minmax(0,1fr) 50px;align-items:center;gap:17px}
 .chart-line b{font-size:14px}
 .chart-line .bar{height:14px;background:#e9eef7;border-radius:99px;overflow:hidden}
-.chart-line .bar span{display:block;height:100%;background:#2b60bd;border-radius:99px;transition:width .3s}
+.chart-line .bar span{display:block;height:100%;background:#2b60bd;border-radius:99px;transition:width .3s,background-color .3s}
 .chart-line .value{text-align:right;font-size:14px;font-weight:750;color:#24539f}
 
 /* ---------- Colaboradores ---------- */
