@@ -149,6 +149,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 .request-row:first-child{border-top:none}
 .request-row small{display:block;color:#70819c;font-size:12px}
 .request-row small.msg{font-style:italic;margin-top:3px}
+.request-selects{display:flex;flex-direction:column;gap:6px}
 .request-actions{display:flex;gap:8px}
 .admin-list{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:#eaf0fb;color:#204c9c;border-radius:99px;padding:6px 12px;font-size:13px;font-weight:650}
