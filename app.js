@@ -521,11 +521,17 @@ function renderAdmin() {
       ${state.pendingRequests.length ? state.pendingRequests.map(r => `
         <div class="request-row" data-req="${r.id}">
           <div><strong>${escapeHtml(r.full_name)}</strong><small>${escapeHtml(r.email)}</small>${r.message ? `<small class="msg">"${escapeHtml(r.message)}"</small>` : ''}</div>
-          <select class="req-person">
-            <option value="">— vincular a colaborador existente —</option>
-            ${state.people.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}
-            <option value="__new__">+ criar novo colaborador com este nome</option>
-          </select>
+          <div class="request-selects">
+            <select class="req-role">
+              <option value="colaborador">Colaborador (aparece no acompanhamento)</option>
+              <option value="master">Máster (acesso total, não aparece no acompanhamento)</option>
+            </select>
+            <select class="req-person">
+              <option value="">— vincular a colaborador existente —</option>
+              ${state.people.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}
+              <option value="__new__">+ criar novo colaborador com este nome</option>
+            </select>
+          </div>
           <div class="request-actions">
             <button type="button" class="btn-small approve-req">Aprovar</button>
             <button type="button" class="btn-small btn-danger reject-req">Recusar</button>
@@ -553,6 +559,13 @@ function renderAdmin() {
 
   $$('.approve-req', el).forEach(b => b.addEventListener('click', (e) => approveRequest(e.target.closest('.request-row'))));
   $$('.reject-req', el).forEach(b => b.addEventListener('click', (e) => rejectRequest(e.target.closest('.request-row').dataset.req)));
+  $$('.req-role', el).forEach(sel => {
+    const row = sel.closest('.request-row');
+    const personSelect = $('.req-person', row);
+    const syncPersonVisibility = () => { personSelect.style.display = sel.value === 'master' ? 'none' : ''; };
+    syncPersonVisibility();
+    sel.addEventListener('change', syncPersonVisibility);
+  });
   $('#add-person-form', el).addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('#new-person-name').value.trim();
@@ -575,15 +588,24 @@ function renderAdmin() {
 async function approveRequest(row) {
   const reqId = row.dataset.req;
   const req = state.pendingRequests.find(r => r.id === reqId);
-  const select = $('.req-person', row);
-  let personId = select.value;
-  if (!personId) { alert('Escolha a quem esta pessoa corresponde (ou crie um novo colaborador).'); return; }
-  if (personId === '__new__') {
-    const { data, error } = await sb.from('people').insert({ name: req.full_name }).select().single();
-    if (error) { alert('Erro ao criar colaborador: ' + error.message); return; }
-    personId = data.id;
+  const roleSelect = $('.req-role', row);
+  const role = roleSelect ? roleSelect.value : 'colaborador';
+  let personId = null;
+  if (role === 'colaborador') {
+    const select = $('.req-person', row);
+    personId = select.value;
+    if (!personId) { alert('Escolha a quem esta pessoa corresponde (ou crie um novo colaborador).'); return; }
+    if (personId === '__new__') {
+      const { data, error } = await sb.from('people').insert({ name: req.full_name }).select().single();
+      if (error) { alert('Erro ao criar colaborador: ' + error.message); return; }
+      personId = data.id;
+      if (state.cycles.length) {
+        await sb.from('courses').insert(state.cycles.map(c => ({ cycle_id: c.id, person_id: personId })));
+        await sb.from('feedbacks').insert(state.cycles.map(c => ({ cycle_id: c.id, person_id: personId })));
+      }
+    }
   }
-  const { error: profErr } = await sb.from('profiles').insert({ id: req.user_id, full_name: req.full_name, role: 'colaborador', person_id: personId });
+  const { error: profErr } = await sb.from('profiles').insert({ id: req.user_id, full_name: req.full_name, role, person_id: personId });
   if (profErr) { alert('Erro ao aprovar: ' + profErr.message); return; }
   await sb.from('access_requests').update({ status: 'aprovado', reviewed_by: state.profile.id, reviewed_at: new Date().toISOString() }).eq('id', reqId);
   await loadCore();
